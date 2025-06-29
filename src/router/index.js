@@ -2,6 +2,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import HomeView from '../views/HomeView.vue'
 import SearchView from '../views/SearchView.vue'
+import BooksView from '../views/BooksView.vue'
+import UserListsView from '../views/UserListsView.vue'
+import BookLoggingView from '../views/BookLoggingView.vue'
+
 import BookDetailView from '../views/BookDetailView.vue'
 import AuthorDetailView from '../views/AuthorDetailView.vue'
 
@@ -17,6 +21,10 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: HomeView },
     { path: '/search', name: 'search', component: SearchView },
+    { path: '/books', name: 'books', component: BooksView },
+    { path: '/lists', name: 'user-lists', component: UserListsView },
+    { path: '/log-book', name: 'log-book', component: BookLoggingView },
+
     { path: '/book/:id', name: 'book-detail', component: BookDetailView },
     { path: '/author/:id', name: 'author', component: AuthorDetailView },
     { path: '/profile/:username', name: 'profile-detail', component: ProfileDetailView },
