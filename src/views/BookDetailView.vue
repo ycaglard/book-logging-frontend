@@ -1,5 +1,5 @@
 <template>
-  <p>home</p>
+  <p>bookdetail</p>
 </template>
 <script></script>
 <style></style>
