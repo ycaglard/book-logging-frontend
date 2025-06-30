@@ -25,9 +25,9 @@ const router = createRouter({
     { path: '/lists', name: 'user-lists', component: UserListsView },
     { path: '/log-book', name: 'log-book', component: BookLoggingView },
 
-    { path: '/book/:id', name: 'book-detail', component: BookDetailView },
-    { path: '/author/:id', name: 'author', component: AuthorDetailView },
-    { path: '/profile/:username', name: 'profile-detail', component: ProfileDetailView },
+    { path: '/books/:id', name: 'book-detail', component: BookDetailView },
+    { path: '/authors/:id', name: 'author', component: AuthorDetailView },
+    { path: '/profiles/:username', name: 'profile-detail', component: ProfileDetailView },
 
     { path: '/login', name: 'login', component: LoginView },
     { path: '/register', name: 'register', component: RegisterView },
