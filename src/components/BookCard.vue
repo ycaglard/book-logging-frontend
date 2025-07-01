@@ -11,7 +11,10 @@
     </div>
 
     <div class="book-info">
-      <div class="title">{{ book.title }}</div>
+      <div class="title">
+        <span class="title-text">{{ book.title }}</span>
+        <span class="year">({{ book.publicationYear }})</span>
+      </div>
       <div class="rating">
         ⭐ {{ book.averageRating.toFixed(1) }}
         <span class="rating-count">({{ book.numberOfRatings }})</span>
@@ -40,7 +43,6 @@ const likeBook = (bookId) => {
 .book-card {
   width: 160px;
   max-width: 100%;
-  background-color: #1e1e2e;
   border: none;
   border-radius: 8px;
   overflow: hidden;
@@ -110,12 +112,28 @@ const likeBook = (bookId) => {
 }
 
 .title {
-  font-size: 0.9rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.7rem;
   font-weight: 600;
   margin-bottom: 0.2rem;
   white-space: nowrap;
+}
+
+.title-text {
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100px; /* You can adjust this value if needed */
+  display: inline-block;
+}
+
+.year {
+  flex-shrink: 0;
+  color: #aaa;
+  font-size: 0.7rem;
 }
 
 .rating {
