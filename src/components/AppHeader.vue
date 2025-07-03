@@ -7,7 +7,7 @@
       </div>
       <ul class="nav-links">
         <li>
-          <RouterLink :to="`/profile/${username}`">{{ username }}</RouterLink>
+          <RouterLink :to="`/profiles/${username}`">{{ username }}</RouterLink>
         </li>
         <li>
           <RouterLink to="/books">Books</RouterLink>

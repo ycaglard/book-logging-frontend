@@ -3,11 +3,12 @@ import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 import SearchView from '../views/SearchView.vue'
 import BooksView from '../views/BooksView.vue'
-import UserListsView from '../views/UserListsView.vue'
+import ListsView from '../views/ListsView.vue'
 import BookLoggingView from '../views/BookLoggingView.vue'
 
 import BookDetailView from '../views/BookDetailView.vue'
 import AuthorDetailView from '../views/AuthorDetailView.vue'
+import ListDetailView from '../views/ListDetailView.vue'
 
 import ProfileDetailView from '../views/profile/ProfileDetailView.vue'
 
@@ -22,12 +23,13 @@ const router = createRouter({
     { path: '/', name: 'home', component: HomeView },
     { path: '/search', name: 'search', component: SearchView },
     { path: '/books', name: 'books', component: BooksView },
-    { path: '/lists', name: 'user-lists', component: UserListsView },
+    { path: '/lists', name: 'user-lists', component: ListsView },
     { path: '/log-book', name: 'log-book', component: BookLoggingView },
 
     { path: '/books/:id', name: 'book-detail', component: BookDetailView },
     { path: '/authors/:id', name: 'author', component: AuthorDetailView },
     { path: '/profiles/:username', name: 'profile-detail', component: ProfileDetailView },
+    { path: '/lists/:id', name: 'list-detail', component: ListDetailView },
 
     { path: '/login', name: 'login', component: LoginView },
     { path: '/register', name: 'register', component: RegisterView },

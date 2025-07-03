@@ -139,3 +139,191 @@ export const books = [
     averageRating: 4.3,
   },
 ]
+
+export const lists = [
+  {
+    id: 1,
+    name: 'Summer Reads',
+    description: 'Light and fun books to read during summer.',
+    userId: 'alice',
+    likes: 42,
+    comments: 10,
+    booksCount: 8,
+    books: [
+      {
+        id: 1,
+        coverUrl: bookCover,
+        title: 'dummyTitle',
+      },
+      {
+        id: 2,
+        coverUrl: bookCover,
+        title: 'dummyTitle2',
+      },
+      {
+        id: 3,
+        coverUrl: bookCover,
+        title: 'dummyTitle3',
+      },
+      {
+        id: 4,
+        coverUrl: bookCover,
+        title: 'dummyTitle4',
+      },
+      {
+        id: 35,
+        coverUrl: bookCover,
+        title: 'dummyTitle5',
+      },
+    ],
+    createdAt: '2024-07-01',
+  },
+  {
+    id: 2,
+    name: 'Deep Thinkers',
+    description: 'Books that make you think.',
+    userId: 'bob',
+    likes: 75,
+    comments: 15,
+    booksCount: 5,
+    books: [
+      {
+        id: 1,
+        coverUrl: bookCover,
+        title: 'dummyTitles',
+      },
+      {
+        id: 2,
+        coverUrl: bookCover,
+        title: 'dummyTitles2',
+      },
+      {
+        id: 3,
+        coverUrl: bookCover,
+        title: 'dummyTitles3',
+      },
+      {
+        id: 4,
+        coverUrl: bookCover,
+        title: 'dummyTitles4',
+      },
+      {
+        id: 35,
+        coverUrl: bookCover,
+        title: 'dummyTitles5',
+      },
+    ],
+    createdAt: '2024-06-20',
+  },
+  {
+    id: 3,
+    name: 'Fantasy Escapes',
+    description: 'Lose yourself in another world.',
+    userId: 'charlie',
+    likes: 55,
+    comments: 8,
+    booksCount: 12,
+    books: [
+      {
+        id: 1,
+        coverUrl: bookCover,
+        title: 'dummyTitlee',
+      },
+      {
+        id: 2,
+        coverUrl: bookCover,
+        title: 'dummyTitlee2',
+      },
+      {
+        id: 3,
+        coverUrl: bookCover,
+        title: 'dummyTitlee3',
+      },
+      {
+        id: 4,
+        coverUrl: bookCover,
+        title: 'dummyTitlee4',
+      },
+      {
+        id: 35,
+        coverUrl: bookCover,
+        title: 'dummyTitlee5',
+      },
+    ],
+    createdAt: '2024-06-28',
+  },
+  {
+    id: 4,
+    name: 'Fantasy Escapes',
+    description: 'Lose yourself in another world.',
+    userId: 'charlie',
+    likes: 59,
+    comments: 8,
+    booksCount: 12,
+    books: [
+      {
+        id: 1,
+        coverUrl: bookCover,
+        title: 'dummyTitlee',
+      },
+      {
+        id: 2,
+        coverUrl: bookCover,
+        title: 'dummyTitlee2',
+      },
+      {
+        id: 3,
+        coverUrl: bookCover,
+        title: 'dummyTitlee3',
+      },
+      {
+        id: 4,
+        coverUrl: bookCover,
+        title: 'dummyTitlee4',
+      },
+      {
+        id: 35,
+        coverUrl: bookCover,
+        title: 'dummyTitlee5',
+      },
+    ],
+    createdAt: '2024-06-28',
+  },
+  {
+    id: 5,
+    name: 'Fantasy Escapes',
+    description: 'Lose yourself in another world.',
+    userId: 'charlie',
+    likes: 56,
+    comments: 9,
+    booksCount: 12,
+    books: [
+      {
+        id: 1,
+        coverUrl: bookCover,
+        title: 'dummyTitlee',
+      },
+      {
+        id: 2,
+        coverUrl: bookCover,
+        title: 'dummyTitlee2',
+      },
+      {
+        id: 3,
+        coverUrl: bookCover,
+        title: 'dummyTitlee3',
+      },
+      {
+        id: 4,
+        coverUrl: bookCover,
+        title: 'dummyTitlee4',
+      },
+      {
+        id: 35,
+        coverUrl: bookCover,
+        title: 'dummyTitlee5',
+      },
+    ],
+    createdAt: '2024-06-28',
+  },
+]
