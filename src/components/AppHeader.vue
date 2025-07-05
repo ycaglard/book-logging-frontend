@@ -10,6 +10,9 @@
           <RouterLink :to="`/profiles/${username}`">{{ username }}</RouterLink>
         </li>
         <li>
+          <RouterLink :to="`/open-library/books`">Read from Library</RouterLink>
+        </li>
+        <li>
           <RouterLink to="/books">Books</RouterLink>
         </li>
         <li>
@@ -35,7 +38,7 @@ const username = 'exampleUsername'
 
 <style scoped>
 .app-header {
-  padding: 1rem 2rem;
+  padding: 1rem;
   display: flex;
   justify-content: center;
   background-color: rgb(10, 10, 18);

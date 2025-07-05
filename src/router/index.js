@@ -5,6 +5,7 @@ import SearchView from '../views/SearchView.vue'
 import BooksView from '../views/BooksView.vue'
 import ListsView from '../views/ListsView.vue'
 import BookLoggingView from '../views/BookLoggingView.vue'
+import OpenLibraryView from '../views/OpenLibraryView.vue'
 
 import BookDetailView from '../views/BookDetailView.vue'
 import AuthorDetailView from '../views/AuthorDetailView.vue'
@@ -25,6 +26,7 @@ const router = createRouter({
     { path: '/books', name: 'books', component: BooksView },
     { path: '/lists', name: 'user-lists', component: ListsView },
     { path: '/log-book', name: 'log-book', component: BookLoggingView },
+    { path: '/open-library/books', name: 'open-library', component: OpenLibraryView },
 
     { path: '/books/:id', name: 'book-detail', component: BookDetailView },
     { path: '/authors/:id', name: 'author', component: AuthorDetailView },
