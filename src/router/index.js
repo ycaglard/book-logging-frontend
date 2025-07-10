@@ -15,6 +15,7 @@ import ProfileDetailView from '../views/profile/ProfileDetailView.vue'
 
 import LoginView from '../views/auth/LoginView.vue'
 import RegisterView from '../views/auth/RegisterView.vue'
+import VerificationView from '../views/auth/VerificationView.vue'
 
 import NotFoundView from '../views/NotFoundView.vue'
 
@@ -35,9 +36,23 @@ const router = createRouter({
 
     { path: '/login', name: 'login', component: LoginView },
     { path: '/register', name: 'register', component: RegisterView },
+    { path: '/verify', name: 'verify', component: VerificationView },
 
     { path: '/:pathMatch(.*)*', name: 'not-found', component: NotFoundView },
   ],
+})
+
+// Global Navigation Guard
+router.beforeEach((to, from, next) => {
+  const publicPages = ['/login', '/register', '/verify']
+  const authRequired = !publicPages.includes(to.path)
+  const token = localStorage.getItem('token')
+
+  if (authRequired && !token) {
+    return next('/login')
+  }
+
+  next()
 })
 
 export default router
