@@ -26,15 +26,27 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import BookCard from '@/components/BookCard.vue'
-import { books } from '@/data/sampleData.js'
+import api from '@/api/api.js'
 
 const selectedSort = ref('newest')
+const books = ref([])
+
+const fetchBooks = async () => {
+  try {
+    const response = await api.get('/books')
+    console.log('got books')
+    books.value = response.data
+  } catch (error) {
+    console.error('Error fetching books:', error)
+  }
+}
+
+onMounted(fetchBooks)
 
 const sortedBooks = computed(() => {
-  const copy = [...books]
-
+  const copy = [...books.value]
   switch (selectedSort.value) {
     case 'newest':
       return copy.sort((a, b) => b.publicationYear - a.publicationYear)

@@ -32,10 +32,13 @@ async function onSubmit() {
       username: username.value,
       password: password.value,
     })
-    localStorage.setItem('token', res.data.token)
+    console.log('response:')
+    console.log(res.data)
+    localStorage.setItem('token', res.data)
     localStorage.setItem('username', username.value)
     router.push('/')
   } catch (err) {
+    console.log('failed')
     error.value = err.response?.data?.message || 'Login failed'
   } finally {
     loading.value = false
