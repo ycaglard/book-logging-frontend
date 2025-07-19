@@ -19,21 +19,80 @@
       </div>
     </div>
 
-    <div class="books-grid">
+    <!-- Loading state -->
+    <div v-if="loading" class="loading">
+      <p>Loading books...</p>
+    </div>
+
+    <!-- Error state -->
+    <div v-else-if="error" class="error">
+      <p>{{ error }}</p>
+      <button @click="fetchBooks" class="retry-btn">Try Again</button>
+    </div>
+
+    <!-- Books grid -->
+    <div v-else class="books-grid">
       <BookCard v-for="book in sortedBooks" :key="book.id" :book="book" />
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import BookCard from '@/components/BookCard.vue'
-import { books } from '@/data/sampleData.js'
+import api from '@/api/api.js'
 
 const selectedSort = ref('newest')
+const books = ref([])
+const loading = ref(false)
+const error = ref(null)
+
+// Fetch books from API
+async function fetchBooks() {
+  loading.value = true
+  error.value = null
+  
+  try {
+    console.log('📚 Fetching books from API...')
+    const response = await api.get('/books')
+    console.log('📥 API Response:', response.data)
+    
+    // Map the API response to match your expected book structure
+    books.value = response.data.map(book => ({
+      id: book.id,
+      title: book.title,
+      authors: book.authors || [],
+      coverUrl: book.coverUrl || book.cover_url || book.cover || '/src/assets/cover.jpg',
+      pageCount: book.pageCount || book.page_count || book.pages || 0,
+      publicationYear: book.publicationYear || book.publication_year || book.year || 0,
+      languages: book.languages || ['en'],
+      genres: book.genres || [],
+      summary: book.summary || book.description || '',
+      numberOfReads: book.numberOfReads || book.number_of_reads || book.reads || 0,
+      numberOfLogs: book.numberOfLogs || book.number_of_logs || book.logs || 0,
+      logs: book.logs || [],
+      numberOfReviews: book.numberOfReviews || book.number_of_reviews || book.reviews || 0,
+      reviews: book.reviews || [],
+      numberOfRatings: book.numberOfRatings || book.number_of_ratings || book.ratings || 0,
+      averageRating: book.averageRating || book.average_rating || book.rating || 0,
+    }))
+    
+    console.log('📚 Mapped books:', books.value)
+  } catch (err) {
+    console.error('❌ Error fetching books:', err)
+    error.value = err.response?.data?.message || 'Failed to fetch books'
+  } finally {
+    loading.value = false
+  }
+}
+
+// Load books when component mounts
+onMounted(() => {
+  fetchBooks()
+})
 
 const sortedBooks = computed(() => {
-  const copy = [...books]
+  const copy = [...books.value]
 
   switch (selectedSort.value) {
     case 'newest':
@@ -128,5 +187,31 @@ const sortedBooks = computed(() => {
   padding-bottom: 0; /* remove bottom padding */
   margin-bottom: 1.5rem; /* space between sort and grid */
   height: 40px; /* optionally fix height to dropdown height */
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: rgb(150, 150, 150);
+}
+
+.error {
+  text-align: center;
+  padding: 2rem;
+  color: #e74c3c;
+}
+
+.retry-btn {
+  margin-top: 1rem;
+  padding: 0.5rem 1rem;
+  background: #0077cc;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.retry-btn:hover {
+  background: #005fa3;
 }
 </style>

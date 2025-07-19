@@ -1,6 +1,7 @@
 <template>
   <div class="book-stack">
     <div
+      v-if="visibleBooks.length > 0"
       v-for="(book, index) in visibleBooks"
       :key="book.id"
       class="book-cover"
@@ -12,11 +13,20 @@
     >
       <img :src="book.coverUrl" :alt="book.title" />
     </div>
+    
+    <!-- Placeholder for empty lists -->
+    <div v-else class="book-cover empty-placeholder">
+      <div class="empty-content">
+        <BookOpen class="empty-icon" />
+        <span class="empty-text">No books yet</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { computed } from 'vue'
+import { BookOpen } from 'lucide-vue-next'
 
 const props = defineProps({
   books: {
@@ -63,5 +73,34 @@ const visibleBooks = computed(() => props.books.slice(0, 5))
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+}
+
+.empty-placeholder {
+  margin-left: 0;
+  background: linear-gradient(135deg, rgb(60, 60, 60), rgb(40, 40, 40));
+  border: 2px dashed rgb(100, 100, 100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.empty-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: rgb(150, 150, 150);
+  text-align: center;
+}
+
+.empty-icon {
+  width: 2rem;
+  height: 2rem;
+  color: rgb(120, 120, 120);
+}
+
+.empty-text {
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 </style>

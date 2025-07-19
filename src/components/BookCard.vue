@@ -1,12 +1,15 @@
 <template>
   <div class="book-card">
     <div class="cover-container">
-      <RouterLink :to="`/books/${book.id}`">
+      <RouterLink :to="`/books/${book.id}`" @click="storeBookData(book)">
         <img :src="book.coverUrl" :alt="book.title" class="book-cover" />
       </RouterLink>
       <div class="hover-actions">
         <button @click="logBook(book.id)">Log</button>
         <button @click="likeBook(book.id)">Like</button>
+        <button class="delete-btn" @click="deleteBook(book.id)" title="Remove book">
+          <XCircle class="delete-icon" />
+        </button>
       </div>
     </div>
 
@@ -25,10 +28,29 @@
 
 <script setup>
 import { RouterLink } from 'vue-router'
+import { XCircle } from 'lucide-vue-next'
+import api from '@/api/api.js'
 
-const { book } = defineProps({
+const { book, bookListId } = defineProps({
   book: Object,
+  bookListId: [String, Number],
 })
+const emit = defineEmits(['bookDeleted'])
+
+const storeBookData = (book) => {
+  console.log('💾 Storing book data in localStorage:', book.title)
+  localStorage.setItem('currentBookData', JSON.stringify({
+    id: book.id,
+    title: book.title,
+    authors: book.authors,
+    coverUrl: book.coverUrl,
+    summary: book.summary,
+    subjects: book.subjects,
+    languages: book.languages,
+    downloadCount: book.downloadCount
+  }))
+  console.log('✅ Book data stored successfully')
+}
 
 const logBook = (bookId) => {
   console.log('Log book:', bookId)
@@ -36,6 +58,24 @@ const logBook = (bookId) => {
 
 const likeBook = (bookId) => {
   console.log('Like book:', bookId)
+}
+
+const deleteBook = async (bookId) => {
+  if (!bookListId) {
+    alert('No book list ID provided!')
+    return
+  }
+  try {
+    const requestBody = {
+      bookListId: Number(bookListId),
+      bookId: bookId
+    }
+    await api.post('/openlibrary/booklists/books/delete', requestBody)
+    emit('bookDeleted', bookId)
+  } catch (err) {
+    console.error('❌ Error deleting book:', err)
+    alert('Failed to delete book. Please try again.')
+  }
 }
 </script>
 
@@ -103,6 +143,33 @@ const likeBook = (bookId) => {
 
 .hover-actions button:hover {
   background: #005fa3;
+}
+
+.hover-actions .delete-btn {
+  background: #e74c3c;
+  color: white;
+  margin-left: 0.3rem;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: 1.1rem;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  min-width: 0;
+  min-height: 0;
+}
+.hover-actions .delete-btn:hover {
+  background: #c0392b;
+}
+
+.delete-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5px;
+  pointer-events: none;
 }
 
 .book-info {

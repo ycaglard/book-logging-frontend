@@ -84,6 +84,7 @@ export const logs = [
 export const books = [
   {
     id: 'book1',
+    workId: 'OL66554W', // Pride and Prejudice
     title: 'Pride and Prejudice',
     authors: [authors[0]],
     coverUrl: bookCover,
@@ -102,6 +103,7 @@ export const books = [
   },
   {
     id: 'book2',
+    workId: 'OL37513138W', // Adventures of Huckleberry Finn
     title: 'Adventures of Huckleberry Finn',
     authors: [authors[1]],
     coverUrl: bookCover,
@@ -121,6 +123,7 @@ export const books = [
   },
   {
     id: 'book3',
+    workId: 'OL2625431W', // Kafka on the Shore
     title: 'Kafka on the Shore',
     authors: [authors[2]],
     coverUrl: bookCover,

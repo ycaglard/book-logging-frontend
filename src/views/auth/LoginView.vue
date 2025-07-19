@@ -16,30 +16,40 @@
 <script setup>
 import { ref } from 'vue'
 import { useRouter, RouterLink } from 'vue-router'
-import api from '@/api/api.js'
+import { useAuth } from '@/composables/useAuth.js'
 
 const username = ref('')
 const password = ref('')
 const loading = ref(false)
 const error = ref(null)
 const router = useRouter()
+const { login } = useAuth()
 
 async function onSubmit() {
   loading.value = true
   error.value = null
-  try {
-    const res = await api.post('/auth/login', {
+  
+  console.log('🔐 Login form submitting with:', {
+    username: username.value,
+    password: password.value ? '[HIDDEN]' : 'Empty'
+  })
+  
+  const result = await login({
       username: username.value,
       password: password.value,
     })
-    localStorage.setItem('token', res.data.token)
-    localStorage.setItem('username', username.value)
+  
+  console.log('🔐 Login result:', result)
+  
+  if (result.success) {
+    console.log('✅ Login successful, redirecting to home')
     router.push('/')
-  } catch (err) {
-    error.value = err.response?.data?.message || 'Login failed'
-  } finally {
-    loading.value = false
+  } else {
+    console.error('❌ Login failed:', result.error)
+    error.value = result.error
   }
+  
+    loading.value = false
 }
 </script>
 
