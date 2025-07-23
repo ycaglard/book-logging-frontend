@@ -2,11 +2,16 @@
   <div class="book-card">
     <div class="cover-container">
       <RouterLink :to="`/books/${book.id}`" @click="storeBookData(book)">
-        <img :src="book.coverUrl" :alt="book.title" class="book-cover" />
+        <CachedImage
+          :src="coverUrl"
+          :alt="book.title"
+          image-class="book-cover"
+          :show-loading="false"
+        />
       </RouterLink>
       <div class="hover-actions">
-        <button @click="logBook(book.id)">Log</button>
-        <button @click="likeBook(book.id)">Like</button>
+        <button @click="logBook()">Log</button>
+        <button v-if="!isLiked" @click="likeBook(book.id)">Like</button>
         <button class="delete-btn" @click="deleteBook(book.id)" title="Remove book">
           <XCircle class="delete-icon" />
         </button>
@@ -27,15 +32,23 @@
 </template>
 
 <script setup>
-import { RouterLink } from 'vue-router'
+import { RouterLink, useRouter } from 'vue-router'
 import { XCircle } from 'lucide-vue-next'
 import api from '@/api/api.js'
+import { useNotification } from '@/composables/useNotification.js'
+import { useAuth } from '@/composables/useAuth.js'
+import { findOrCreateLikedList, addBookToLikedList } from '@/composables/useReviewedList.js'
+import { cleanBookId } from '@/utils/book.js'
+import { useSimpleCoverUrl } from '@/composables/useCoverImage.js'
+import CachedImage from '@/components/CachedImage.vue'
+import { computed } from 'vue'
 
-const { book, bookListId } = defineProps({
+const { book, bookListId, isLiked } = defineProps({
   book: Object,
   bookListId: [String, Number],
+  isLiked: Boolean
 })
-const emit = defineEmits(['bookDeleted'])
+const emit = defineEmits(['bookDeleted', 'logBook', 'bookLiked'])
 
 const storeBookData = (book) => {
   console.log('💾 Storing book data in localStorage:', book.title)
@@ -52,12 +65,35 @@ const storeBookData = (book) => {
   console.log('✅ Book data stored successfully')
 }
 
-const logBook = (bookId) => {
-  console.log('Log book:', bookId)
+const router = useRouter()
+const { showSuccess, showError } = useNotification()
+const { isLoggedIn } = useAuth()
+
+const logBook = () => {
+  emit('logBook', book)
 }
 
-const likeBook = (bookId) => {
-  console.log('Like book:', bookId)
+const likeBook = async (bookId) => {
+  if (!isLoggedIn.value) {
+    showError('Not logged in', 'Please log in to like a book.')
+    return
+  }
+  try {
+    const profileUsername = localStorage.getItem('username')
+    const likedList = await findOrCreateLikedList(profileUsername)
+    if (likedList) {
+      await addBookToLikedList(likedList.id, book.id)
+      showSuccess('Book Liked', `"${book.title}" has been added to your Books I Liked list.`)
+      // Emit event to parent with cleaned book ID
+      const cleanedId = book.id && typeof book.id === 'string' ? book.id.replace('/works/', '').replace(/^\//, '') : book.id
+      emit('bookLiked', cleanedId)
+    } else {
+      showError('List Not Found', 'Could not find or create your Books I Liked list.')
+    }
+  } catch (err) {
+    console.error('❌ Error liking book:', err)
+    showError('Error', 'Failed to like book. Please try again.')
+  }
 }
 
 const deleteBook = async (bookId) => {
@@ -66,6 +102,15 @@ const deleteBook = async (bookId) => {
     return
   }
   try {
+    // Delete all reviews for this book by the current user
+    const profileUsername = localStorage.getItem('username')
+    const cleanedId = book.id && typeof book.id === 'string' ? book.id.replace('/works/', '').replace(/^\//, '') : bookId
+    const reviewsResponse = await api.get(`/reviews/books/${cleanedId}`)
+    const userReviews = (reviewsResponse.data || []).filter(r => r.username === profileUsername)
+    for (const review of userReviews) {
+      await api.post('/reviews/delete', { reviewId: review.id })
+    }
+    // Now remove the book from the list
     const requestBody = {
       bookListId: Number(bookListId),
       bookId: bookId
@@ -76,7 +121,11 @@ const deleteBook = async (bookId) => {
     console.error('❌ Error deleting book:', err)
     alert('Failed to delete book. Please try again.')
   }
-}
+  }
+
+// Create a reactive reference for coverId
+const bookCoverId = computed(() => book.coverId)
+const coverUrl = useSimpleCoverUrl(bookCoverId, 'M')
 </script>
 
 <style scoped>

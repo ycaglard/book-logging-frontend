@@ -16,7 +16,16 @@
       <!-- Header section -->
       <div class="book-header">
         <div class="book-cover">
-          <img :src="book.coverUrl" :alt="book.title" class="cover-image" />
+          <div v-if="coverLoading" class="cover-loading">
+            <div class="loading-spinner"></div>
+            <p>Loading cover...</p>
+          </div>
+          <CachedImage
+            v-else
+            :src="coverUrl"
+            :alt="book.title"
+            image-class="cover-image"
+          />
         </div>
         <div class="book-info">
           <h1 class="book-title">{{ book.title }}</h1>
@@ -83,7 +92,7 @@
         <button class="action-btn secondary">
           <Heart class="icon" /> Add to Wishlist
         </button>
-        <button class="action-btn secondary">
+        <button class="action-btn secondary" @click="showAddReviewModal = true">
           <Plus class="icon" /> Log Reading
         </button>
       </div>
@@ -92,9 +101,6 @@
       <div class="reviews-section">
         <div class="reviews-header">
           <h2>Reviews ({{ reviews.length }})</h2>
-          <button class="add-review-btn" @click="showAddReviewModal = true">
-            <Plus class="icon" /> Add Review
-          </button>
         </div>
 
         <div v-if="reviewsLoading" class="reviews-loading">
@@ -128,7 +134,17 @@
                   </span>
                 </div>
               </div>
-              <span class="review-date">{{ formatDate(review.createdAt) }}</span>
+              <div class="review-actions">
+                <span class="review-date">{{ formatDate(review.createdAt) }}</span>
+                <button 
+                  v-if="isUserReview(review)"
+                  class="delete-review-btn"
+                  @click="deleteReview(review.id)"
+                  title="Delete review"
+                >
+                  <Trash2 class="icon" />
+                </button>
+              </div>
             </div>
             
             <h3 class="review-title">{{ review.title }}</h3>
@@ -198,7 +214,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { 
   Globe, 
@@ -208,13 +224,20 @@ import {
   Heart, 
   Plus,
   MessageSquare,
-  X
+  X,
+  Trash2
 } from 'lucide-vue-next'
 import api from '@/api/api.js'
 import { useAuth } from '@/composables/useAuth.js'
+import { useNotification } from '@/composables/useNotification.js'
+import { cleanBookId } from '@/utils/book.js'
+import { findReviewedList, addBookToReviewedList, removeBookFromReviewedList } from '@/composables/useReviewedList.js'
+
+import CachedImage from '@/components/CachedImage.vue'
 
 const route = useRoute()
 const { isLoggedIn } = useAuth()
+const { showError, showConfirm, hideNotification } = useNotification()
 
 const book = ref({
   id: 0,
@@ -228,6 +251,7 @@ const book = ref({
   copyright: null,
   translators: null,
   bookshelves: null,
+  coverId: null, // Add coverId to initial state
   coverUrl: '/src/assets/cover.jpg'
 })
 const loading = ref(false)
@@ -284,6 +308,8 @@ async function fetchBookDetails() {
     // Map the API response to match your expected book structure
     const apiBook = response.data
     
+    console.log('BookDetailView: API response coverId =', apiBook.coverId)
+    
     book.value = {
       id: apiBook.bookId || apiBook.isbn || apiBook.id || 0, // Use bookId as primary identifier
       title: apiBook.title || 'Untitled',
@@ -296,8 +322,11 @@ async function fetchBookDetails() {
       copyright: apiBook.copyright,
       translators: apiBook.translators,
       bookshelves: apiBook.bookshelves,
+      coverId: apiBook.coverId, // Add coverId mapping
       coverUrl: apiBook.coverUrl || apiBook.cover_url || '/src/assets/cover.jpg'
     }
+    
+    console.log('BookDetailView: book.value.coverId set to =', book.value.coverId)
     
   } catch (err) {
     console.error('❌ Error fetching book details:', err)
@@ -322,15 +351,9 @@ async function fetchReviews() {
   
   try {
     // Clean the book ID to remove /works/ prefix
-    let cleanBookId = book.value.id
-    if (typeof cleanBookId === 'string' && cleanBookId.startsWith('/works/')) {
-      cleanBookId = cleanBookId.replace('/works/', '')
-    }
-    if (typeof cleanBookId === 'string' && cleanBookId.startsWith('/')) {
-      cleanBookId = cleanBookId.substring(1)
-    }
+    let cleanedId = cleanBookId(book.value.id)
     
-    const response = await api.get(`/reviews/books/${cleanBookId}`)
+    const response = await api.get(`/reviews/books/${cleanedId}`)
     reviews.value = response.data
   } catch (err) {
     console.error('❌ Error fetching reviews:', err)
@@ -366,10 +389,51 @@ function closeAddReviewModal() {
   }
 }
 
+// Check if review belongs to current user
+function isUserReview(review) {
+  const currentUsername = localStorage.getItem('username')
+  return review.username === currentUsername
+}
+
+// Delete review
+async function deleteReview(reviewId) {
+  const confirmed = await showConfirm(
+    'Delete Review',
+    'Are you sure you want to delete this review? This action cannot be undone.'
+  )
+  
+  if (!confirmed) {
+    hideNotification()
+    return
+  }
+  
+  try {
+    const response = await api.post('/reviews/delete', {
+      reviewId: reviewId
+    })
+    
+    // Refresh reviews after successful deletion
+    await fetchReviews()
+    // After successful review deletion, only remove book from 'Books I've Reviewed' list if user has no remaining reviews for this book
+    try {
+      const profileUsername = localStorage.getItem('username')
+      const reviewedList = await findReviewedList(profileUsername)
+      if (reviewedList) await removeBookFromReviewedList(reviewedList.id, book.value.id)
+    } catch (err) {
+      console.error('❌ Error removing book from Books I\'ve Reviewed list:', err)
+    }
+    hideNotification()
+  } catch (err) {
+    console.error('❌ Error deleting review:', err)
+    showError('Error', 'Failed to delete review. Please try again.')
+    hideNotification()
+  }
+}
+
 // Submit new review
 async function submitReview() {
   if (!newReview.value.title || !newReview.value.content || newReview.value.rating === 0) {
-    alert('Please fill in all fields and select a rating')
+    showError('Validation Error', 'Please fill in all fields and select a rating')
     return
   }
   
@@ -377,17 +441,11 @@ async function submitReview() {
   
   try {
     // Clean the book ID to remove /works/ prefix
-    let cleanBookId = book.value.id
-    if (typeof cleanBookId === 'string' && cleanBookId.startsWith('/works/')) {
-      cleanBookId = cleanBookId.replace('/works/', '')
-    }
-    if (typeof cleanBookId === 'string' && cleanBookId.startsWith('/')) {
-      cleanBookId = cleanBookId.substring(1)
-    }
+    let cleanedId = cleanBookId(book.value.id)
     
     const reviewData = {
       reviewableType: 'BOOK',
-      reviewableId: cleanBookId,
+      reviewableId: cleanedId,
       title: newReview.value.title,
       content: newReview.value.content,
       rating: newReview.value.rating
@@ -395,6 +453,14 @@ async function submitReview() {
     
     const response = await api.post('/reviews', reviewData)
     
+    // After successful review, add book to 'Books I've Reviewed' list
+    try {
+      const profileUsername = localStorage.getItem('username')
+      const reviewedList = await findReviewedList(profileUsername)
+      if (reviewedList) await addBookToReviewedList(reviewedList.id, book.value.id)
+    } catch (err) {
+      console.error('❌ Error adding book to Books I\'ve Reviewed list:', err)
+    }
     // Refresh reviews
     await fetchReviews()
     
@@ -402,7 +468,14 @@ async function submitReview() {
     closeAddReviewModal()
   } catch (err) {
     console.error('❌ Error submitting review:', err)
-    alert('Failed to submit review. Please try again.')
+    
+    if (err.response?.status === 400) {
+      showError('Bad Request', 'Please check your review and try again.')
+    } else if (err.response?.status === 401) {
+      showError('Unauthorized', 'Please log in to submit a review.')
+    } else {
+      showError('Error', 'Failed to submit review. Please try again.')
+    }
   } finally {
     submittingReview.value = false
   }
@@ -417,7 +490,55 @@ onMounted(async () => {
   
   await fetchBookDetails()
   await fetchReviews()
+  // Check if we should open the review modal automatically
+  const openReviewModalForBook = localStorage.getItem('openReviewModalForBook')
+  if (openReviewModalForBook && String(book.value.id) === String(openReviewModalForBook)) {
+    showAddReviewModal.value = true
+    localStorage.removeItem('openReviewModalForBook')
+  }
 })
+
+// Alternative approach: Manual cover URL management
+const coverUrl = ref('/src/assets/cover.jpg')
+const coverLoading = ref(false)
+
+// Watch for coverId changes and update cover URL manually
+watch(() => book.value.coverId, async (newCoverId) => {
+  console.log('BookDetailView: coverId changed to', newCoverId)
+  
+  if (!newCoverId || newCoverId <= 0) {
+    coverUrl.value = '/src/assets/cover.jpg'
+    coverLoading.value = false
+    return
+  }
+  
+  coverLoading.value = true
+  
+  try {
+    // Generate cover URL
+    const url = `https://covers.openlibrary.org/b/id/${newCoverId}-L.jpg`
+    console.log('BookDetailView: Testing cover URL:', url)
+    
+    // Test if image exists
+    const img = new Image()
+    img.onload = () => {
+      console.log('BookDetailView: Cover loaded successfully')
+      coverUrl.value = url
+      coverLoading.value = false
+    }
+    img.onerror = () => {
+      console.log('BookDetailView: Cover failed to load, using default')
+      coverUrl.value = '/src/assets/cover.jpg'
+      coverLoading.value = false
+    }
+    img.src = url
+    
+  } catch (error) {
+    console.error('BookDetailView: Error loading cover:', error)
+    coverUrl.value = '/src/assets/cover.jpg'
+    coverLoading.value = false
+  }
+}, { immediate: true })
 </script>
 
 <style scoped>
@@ -480,6 +601,34 @@ onMounted(async () => {
   object-fit: cover;
   border-radius: 8px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.cover-loading {
+  width: 200px;
+  height: 280px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(40, 40, 40, 0.8);
+  border-radius: 8px;
+  color: rgb(150, 150, 150);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: rgba(255, 255, 255, 0.6);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .book-info {
@@ -778,6 +927,12 @@ onMounted(async () => {
   margin-bottom: 1rem;
 }
 
+.review-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .review-author {
   display: flex;
   flex-direction: column;
@@ -808,6 +963,29 @@ onMounted(async () => {
 .review-date {
   font-size: 0.875rem;
   color: rgb(140, 140, 140);
+}
+
+.delete-review-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  color: rgb(150, 150, 150);
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.delete-review-btn:hover {
+  background: rgb(60, 60, 80);
+  color: #e74c3c;
+}
+
+.delete-review-btn .icon {
+  width: 16px;
+  height: 16px;
 }
 
 .review-title {

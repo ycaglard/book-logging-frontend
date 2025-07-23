@@ -11,7 +11,12 @@
       }"
       :style="{ zIndex: visibleBooks.length - index }"
     >
-      <img :src="book.coverUrl" :alt="book.title" />
+      <CachedImage 
+        :src="book.coverUrl" 
+        :alt="book.title"
+        :show-loading="false"
+        image-class="stack-cover-image"
+      />
     </div>
     
     <!-- Placeholder for empty lists -->
@@ -27,6 +32,8 @@
 <script setup>
 import { computed } from 'vue'
 import { BookOpen } from 'lucide-vue-next'
+import { getCoverUrl } from '@/utils/coverCache.js'
+import CachedImage from '@/components/CachedImage.vue'
 
 const props = defineProps({
   books: {
@@ -35,7 +42,17 @@ const props = defineProps({
   },
 })
 
-const visibleBooks = computed(() => props.books.slice(0, 5))
+const visibleBooks = computed(() => {
+  return props.books.slice(0, 5).map(book => {
+    console.log('BookStack: book.title =', book.title, ', coverId =', book.coverId)
+    const coverUrl = getCoverUrl(book.coverId, 'M')
+    console.log('BookStack: generated coverUrl =', coverUrl)
+    return {
+      ...book,
+      coverUrl // Use cached cover URL generation
+    }
+  })
+})
 </script>
 
 <style scoped>
@@ -68,11 +85,16 @@ const visibleBooks = computed(() => props.books.slice(0, 5))
   border-bottom-right-radius: 4px;
 }
 
-.book-cover img {
+.book-cover :deep(.stack-cover-image) {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: inherit;
+}
+
+.book-cover :deep(.cached-image-container) {
+  width: 100%;
+  height: 100%;
 }
 
 .empty-placeholder {

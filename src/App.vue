@@ -1,11 +1,21 @@
 <script setup>
 import { RouterView } from 'vue-router'
 import AppHeader from './components/AppHeader.vue'
+import CustomNotification from './components/CustomNotification.vue'
+import { useNotification } from './composables/useNotification.js'
+
+const { notification, handleConfirm, handleCancel, handleClose } = useNotification()
 </script>
 
 <template>
   <AppHeader />
   <RouterView />
+  <CustomNotification
+    v-bind="notification"
+    @confirm="handleConfirm"
+    @cancel="handleCancel"
+    @close="handleClose"
+  />
 </template>
 
 <style scoped>

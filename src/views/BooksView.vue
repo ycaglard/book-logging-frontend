@@ -62,6 +62,7 @@ async function fetchBooks() {
       id: book.id,
       title: book.title,
       authors: book.authors || [],
+      coverId: book.coverId, // Add coverId mapping
       coverUrl: book.coverUrl || book.cover_url || book.cover || '/src/assets/cover.jpg',
       pageCount: book.pageCount || book.page_count || book.pages || 0,
       publicationYear: book.publicationYear || book.publication_year || book.year || 0,

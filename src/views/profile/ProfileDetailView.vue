@@ -152,6 +152,7 @@ async function fetchProfileData() {
       books: list.books?.map(book => ({
         id: book.bookId || book.id || book.isbn || 0,
         title: book.title,
+        coverId: book.coverId, // Add coverId mapping
         coverUrl: book.coverUrl || book.cover_url || '/src/assets/cover.jpg',
         authors: book.authors?.map(author => author.name).join(', ') || 'Unknown Author'
       })) || [],

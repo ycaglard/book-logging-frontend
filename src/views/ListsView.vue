@@ -27,7 +27,6 @@
       <p>{{ error }}</p>
       <button @click="fetchLists" class="retry-btn">Try Again</button>
       <button @click="debugToken" class="debug-btn">Debug Token</button>
-      <button @click="clearToken" class="clear-btn">Clear Token & Relogin</button>
     </div>
 
     <!-- Lists grid -->
@@ -105,6 +104,7 @@ import api from '@/api/api.js'
 import BookStack from '@/components/BookStack.vue'
 import { useAuth } from '@/composables/useAuth.js'
 import { Plus, X } from 'lucide-vue-next'
+import { cleanBookId } from '@/utils/book.js'
 
 const selectedSort = ref('books-most')
 const lists = ref([])
@@ -142,15 +142,11 @@ async function fetchLists() {
         booksCount: list.books?.length || list.bookIds?.length || 0,
         books: list.books?.map(book => {
           let bookId = book.bookId || book.isbn || book.id || 0;
-          if (typeof bookId === 'string' && bookId.startsWith('/works/')) {
-            bookId = bookId.replace('/works/', '');
-          }
-          if (typeof bookId === 'string' && bookId.startsWith('/')) {
-            bookId = bookId.substring(1);
-          }
+          bookId = cleanBookId(bookId);
           return {
             id: bookId,
             title: book.title,
+            coverId: book.coverId, // Add coverId mapping
             coverUrl: book.coverUrl || book.cover_url || '/src/assets/cover.jpg',
             authors: book.authors?.map(author => author.name).join(', ') || 'Unknown Author',
             summary: book.summaries?.[0] || book.summary || '',
@@ -231,15 +227,7 @@ function storeListData(list) {
   console.log('✅ List data stored successfully')
 }
 
-// Clear token and redirect to login
-function clearToken() {
-  console.log('🧹 Clearing localStorage...')
-  localStorage.removeItem('token')
-  localStorage.removeItem('username')
-  console.log('✅ localStorage cleared')
-  console.log('🔄 Redirecting to login...')
-  window.location.href = '/login'
-}
+
 
 // Handle Add List button click
 function handleAddList() {
@@ -526,20 +514,7 @@ const sortedLists = computed(() => {
   background: #5a6268;
 }
 
-.clear-btn {
-  margin-top: 1rem;
-  margin-left: 0.5rem;
-  padding: 0.5rem 1rem;
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
 
-.clear-btn:hover {
-  background: #c82333;
-}
 
 /* Modal Styles */
 .modal-overlay {
