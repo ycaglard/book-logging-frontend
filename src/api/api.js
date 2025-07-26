@@ -10,8 +10,8 @@ console.log('📍 Base URL: http://localhost:8080/api (hardcoded)')
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem('token')
+
   console.log('🔑 Token from localStorage:', token ? 'Found' : 'Not found')
-  
   if (token) {
     config.headers.Authorization = `Bearer ${token}`
     console.log('🔐 Authorization header set')
