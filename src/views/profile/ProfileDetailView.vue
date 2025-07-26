@@ -37,11 +37,6 @@
 
       <!-- Compact Lists Section -->
       <div class="lists-section">
-        <div class="section-header">
-          <h2>Default Lists</h2>
-          <span class="list-count">{{ userLists.length }} list{{ userLists.length !== 1 ? 's' : '' }}</span>
-        </div>
-
         <div v-if="userLists.length === 0" class="empty-lists">
           <BookOpen class="empty-icon" />
           <p>No default lists found</p>

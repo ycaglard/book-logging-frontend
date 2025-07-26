@@ -318,16 +318,16 @@ const sortedLists = computed(() => {
   font-family:
     -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans',
     'Helvetica Neue', sans-serif;
-}
+  }
+  
+  .lists-label {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: rgb(200, 200, 200);
+  }
 
-.lists-label {
-  margin: 0;
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: rgb(200, 200, 200);
-}
-
-.sort-container {
+  .sort-container {
   display: flex;
   justify-content: space-between;
   align-items: center;

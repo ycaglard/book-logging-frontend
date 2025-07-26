@@ -19,6 +19,7 @@
             @click="performSearch" 
             :disabled="!searchQuery.trim() || searching"
             class="search-button"
+            @mouseover="console.log('🔍 Button state:', { searchQuery: searchQuery.trim(), searching: searching, disabled: !searchQuery.trim() || searching })"
           >
             {{ searching ? 'Searching...' : 'Search' }}
           </button>
@@ -47,14 +48,7 @@
              </select>
            </div>
            
-           <div v-if="searchType === 'author_search'" class="filter-group">
-             <label for="sortOrder">Sort by:</label>
-             <select v-model="sortOrder" id="sortOrder" class="filter-select">
-               <option value="relevance">Relevance</option>
-               <option value="title">Title</option>
-               <option value="year">Publication Year</option>
-             </select>
-           </div>
+
          </div>
       </div>
       
@@ -157,10 +151,12 @@ const { showError } = useNotification()
 // Search state
 const searchQuery = ref('')
 const searchType = ref('all')
-const sortOrder = ref('relevance')
 const limit = ref(20)
 const currentPage = ref(1)
 const searching = ref(false)
+
+// Debug: Reset searching state on component mount (in case it's stuck)
+console.log('🔄 Initializing search state - searching:', searching.value)
 const searchPerformed = ref(false)
 const error = ref(null)
 
@@ -187,7 +183,7 @@ async function performSearch() {
     console.log('🔍 Performing search:', {
       query: searchQuery.value,
       type: searchType.value,
-      sort: sortOrder.value,
+      sort: searchType.value === 'author_search' ? 'title' : 'n/a',
       limit: limit.value,
       page: currentPage.value
     })
@@ -199,7 +195,7 @@ async function performSearch() {
       const params = {
         name: searchQuery.value.trim(),
         limit: Math.min(limit.value, 100), // Limit to maximum 100
-        sort: sortOrder.value
+        sort: 'title'
       }
       
       console.log('🌐 Author Search API Request params:', params)
@@ -231,7 +227,7 @@ async function performSearch() {
       response = await api.get('/openlibrary/search', { params })
     }
     
-    console.log('📥 Search API Response:', response.data)
+        console.log('📥 Search API Response:', response.data)
     
     let searchResults = []
     
@@ -239,8 +235,13 @@ async function performSearch() {
       // Handle author search response format
       searchResults = response.data.suggestions || []
       results.value = searchResults.map(book => {
-        // Extract work ID from key or id
-        const workId = book.key ? book.key.replace('/works/', '') : book.id
+        // Extract work ID from key or id - handle different formats
+        let workId = book.id
+        if (book.key) {
+          workId = book.key.replace('/works/', '')
+        } else if (book.id && book.id.startsWith('/works/')) {
+          workId = book.id.replace('/works/', '')
+        }
         
         return {
           id: workId,
@@ -337,7 +338,6 @@ function updateURL() {
   const query = {
     q: searchQuery.value,
     type: searchType.value !== 'all' ? searchType.value : undefined,
-    sort: (searchType.value === 'author_search' && sortOrder.value !== 'relevance') ? sortOrder.value : undefined,
     limit: limit.value !== 20 ? limit.value : undefined,
     page: currentPage.value !== 1 ? currentPage.value : undefined
   }
@@ -358,7 +358,6 @@ function loadFromURL() {
   if (urlParams.q) {
     searchQuery.value = urlParams.q
     searchType.value = urlParams.type || 'all'
-    sortOrder.value = urlParams.sort || 'relevance'
     limit.value = parseInt(urlParams.limit) || 20
     currentPage.value = parseInt(urlParams.page) || 1
     
@@ -371,7 +370,6 @@ function loadFromURL() {
 function clearSearch() {
   searchQuery.value = ''
   searchType.value = 'all'
-  sortOrder.value = 'relevance'
   currentPage.value = 1
   results.value = []
   totalResults.value = 0

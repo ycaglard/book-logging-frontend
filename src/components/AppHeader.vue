@@ -12,21 +12,22 @@
           <RouterLink :to="`/profiles/${username}`">{{ username }}</RouterLink>
         </li>
         <li>
-          <RouterLink :to="`/open-library/books`">Read from Library</RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/books">Books</RouterLink>
-        </li>
-        <li>
           <RouterLink to="/lists">Lists</RouterLink>
         </li>
-        <li>
-          <RouterLink to="/search"><Search class="icon" /></RouterLink>
-        </li>
-        <li>
-          <RouterLink to="/log-book" class="log-book-link">
-            <Plus class="plus-icon" /> Log a Book
-          </RouterLink>
+        <li class="search-container">
+          <div class="search-bar">
+            <input
+              v-model="searchQuery"
+              type="text"
+              placeholder="Search books..."
+              class="search-input"
+              @keyup.enter="handleSearch"
+              @input="handleSearchInput"
+            />
+            <button @click="handleSearch" class="search-btn" :disabled="!searchQuery.trim()">
+              <Search class="icon" />
+            </button>
+          </div>
         </li>
           <li>
             <button @click="handleLogout" class="logout-btn">
@@ -49,10 +50,30 @@
 </template>
 
 <script setup>
-import { Search, Plus, Book, LogOut, LogIn } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { Search, Book, LogOut, LogIn } from 'lucide-vue-next'
 import { useAuth } from '@/composables/useAuth.js'
 
+const router = useRouter()
 const { isLoggedIn, username, logout } = useAuth()
+
+// Search functionality
+const searchQuery = ref('')
+
+const handleSearch = () => {
+  if (searchQuery.value.trim()) {
+    router.push({
+      path: '/search',
+      query: { q: searchQuery.value.trim() }
+    })
+    searchQuery.value = '' // Clear the search box after search
+  }
+}
+
+const handleSearchInput = () => {
+  // Optional: Add debounced search or other real-time functionality here
+}
 
 const handleLogout = async () => {
   await logout()
@@ -122,33 +143,85 @@ const handleLogout = async () => {
   background-color: transparent;
 }
 
-.log-book-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.3rem;
-  padding: 0.15rem 0.5rem;
-  background-color: #28a745;
-  color: white !important;
-  border-radius: 3px;
-  font-weight: 600;
-  transition: background-color 0.3s ease;
-}
 
-.log-book-link:hover {
-  background-color: #218838 !important;
-  color: white !important;
-}
-
-.plus-icon {
-  width: 16px;
-  height: 16px;
-  stroke-width: 3;
-  stroke: white;
-}
 
 .icon {
   width: 18px;
   height: 18px;
+}
+
+/* Search Bar Styles */
+.search-container {
+  display: flex;
+  align-items: center;
+}
+
+.search-bar {
+  display: flex;
+  align-items: center;
+  background: rgb(30, 30, 35);
+  border-radius: 6px;
+  border: 1px solid rgb(60, 60, 60);
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.search-bar:focus-within {
+  border-color: #0077cc;
+}
+
+.search-input {
+  background: transparent;
+  border: none;
+  color: rgb(200, 200, 200);
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  outline: none;
+  width: 200px;
+  font-family: inherit;
+}
+
+.search-input::placeholder {
+  color: rgb(120, 120, 120);
+}
+
+.search-btn {
+  background: transparent;
+  border: none;
+  color: rgb(150, 150, 150);
+  cursor: pointer;
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.search-btn:hover:not(:disabled) {
+  color: white;
+}
+
+.search-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .search-input {
+    width: 150px;
+  }
+}
+
+@media (max-width: 600px) {
+  .search-input {
+    width: 120px;
+    font-size: 0.8rem;
+  }
+  
+  .search-input::placeholder {
+    font-size: 0.8rem;
+  }
 }
 
 .login-btn {
