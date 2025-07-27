@@ -32,6 +32,12 @@
               <span class="stat-label">Likes</span>
             </div>
           </div>
+          <!-- Edit Profile Button -->
+          <div class="profile-actions">
+            <RouterLink to="/profile/edit" class="edit-profile-btn">
+              Edit Profile
+            </RouterLink>
+          </div>
         </div>
       </div>
 
@@ -458,6 +464,29 @@ onMounted(() => {
   color: rgb(120, 120, 120);
 }
 
+/* Profile Actions */
+.profile-actions {
+  margin-top: 1rem;
+  display: flex;
+  gap: 1rem;
+}
+
+.edit-profile-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #0077cc;
+  color: white;
+  text-decoration: none;
+  border-radius: 8px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.edit-profile-btn:hover {
+  background: #005fa3;
+}
 
 
 /* Responsive Design */

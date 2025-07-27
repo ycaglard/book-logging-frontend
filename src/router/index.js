@@ -12,6 +12,7 @@ import AuthorDetailView from '../views/AuthorDetailView.vue'
 import ListDetailView from '../views/ListDetailView.vue'
 
 import ProfileDetailView from '../views/profile/ProfileDetailView.vue'
+import EditProfileView from '../views/profile/EditProfileView.vue'
 
 import LoginView from '../views/auth/LoginView.vue'
 import RegisterView from '../views/auth/RegisterView.vue'
@@ -32,6 +33,7 @@ const router = createRouter({
     { path: '/books/:id', name: 'book-detail', component: BookDetailView },
     { path: '/authors/:id', name: 'author', component: AuthorDetailView },
     { path: '/profiles/:username', name: 'profile-detail', component: ProfileDetailView },
+    { path: '/profile/edit', name: 'edit-profile', component: EditProfileView },
     { path: '/lists/:id', name: 'list-detail', component: ListDetailView },
 
     { path: '/login', name: 'login', component: LoginView },
