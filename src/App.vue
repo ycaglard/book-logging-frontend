@@ -1,10 +1,17 @@
 <script setup>
+import { onMounted } from 'vue'
 import { RouterView } from 'vue-router'
 import AppHeader from './components/AppHeader.vue'
 import CustomNotification from './components/CustomNotification.vue'
 import { useNotification } from './composables/useNotification.js'
+import { useAuth } from './composables/useAuth.js'
 
 const { notification, handleConfirm, handleCancel, handleClose } = useNotification()
+const { initializeAuth } = useAuth()
+
+onMounted(() => {
+  initializeAuth()
+})
 </script>
 
 <template>

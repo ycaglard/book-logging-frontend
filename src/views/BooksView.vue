@@ -44,6 +44,7 @@ import api from '@/api/api.js'
 
 const selectedSort = ref('newest')
 const books = ref([])
+
 const loading = ref(false)
 const error = ref(null)
 
@@ -94,7 +95,6 @@ onMounted(() => {
 
 const sortedBooks = computed(() => {
   const copy = [...books.value]
-
   switch (selectedSort.value) {
     case 'newest':
       return copy.sort((a, b) => b.publicationYear - a.publicationYear)
