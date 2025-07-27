@@ -23,24 +23,24 @@ const password = ref('')
 const loading = ref(false)
 const error = ref(null)
 const router = useRouter()
-const { login } = useAuth()
+const { performLogin } = useAuth()
 
 async function onSubmit() {
   loading.value = true
   error.value = null
-  
+
   console.log('🔐 Login form submitting with:', {
     username: username.value,
-    password: password.value ? '[HIDDEN]' : 'Empty'
+    password: password.value ? '[HIDDEN]' : 'Empty',
   })
-  
-  const result = await login({
-      username: username.value,
-      password: password.value,
-    })
-  
+
+  const result = await performLogin({
+    username: username.value,
+    password: password.value,
+  })
+
   console.log('🔐 Login result:', result)
-  
+
   if (result.success) {
     console.log('✅ Login successful, redirecting to home')
     router.push('/')
@@ -48,8 +48,8 @@ async function onSubmit() {
     console.error('❌ Login failed:', result.error)
     error.value = result.error
   }
-  
-    loading.value = false
+
+  loading.value = false
 }
 </script>
 

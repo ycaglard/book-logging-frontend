@@ -1,17 +1,42 @@
 import { ref, computed } from 'vue'
-import api from '@/api/api.js'
+import router from '@/router'
+import api from '@/api/api.js' // your axios instance
 
-// Global reactive authentication state
-const isAuthenticated = ref(false)
+const token = ref(null)
 const username = ref('')
-const token = ref('')
+const isAuthenticated = ref(false)
 
-// Initialize auth state from localStorage
+function parseJwt(token) {
+  try {
+    const base64Url = token.split('.')[1]
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/')
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split('')
+        .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+        .join(''),
+    )
+    return JSON.parse(jsonPayload)
+  } catch (e) {
+    console.log(e)
+    return null
+  }
+}
+
 function initializeAuth() {
   const storedToken = localStorage.getItem('token')
   const storedUsername = localStorage.getItem('username')
-  
+
   if (storedToken && storedToken !== 'undefined') {
+    const payload = parseJwt(storedToken)
+    const currentTime = Date.now() / 1000
+
+    if (payload && payload.exp && payload.exp < currentTime) {
+      console.log('🔐 Token expired. Logging out...')
+      logout()
+      return
+    }
+
     token.value = storedToken
     username.value = storedUsername || ''
     isAuthenticated.value = true
@@ -21,98 +46,56 @@ function initializeAuth() {
   }
 }
 
-// Initialize auth on import
-initializeAuth()
+function login(receivedToken, receivedUsername) {
+  token.value = receivedToken
+  username.value = receivedUsername
+  isAuthenticated.value = true
+  localStorage.setItem('token', receivedToken)
+  localStorage.setItem('username', receivedUsername)
+}
 
-// Composable function
+function logout() {
+  token.value = null
+  username.value = ''
+  isAuthenticated.value = false
+  localStorage.removeItem('token')
+  localStorage.removeItem('username')
+  router.push('/login')
+}
+
+const isLoggedIn = computed(() => isAuthenticated.value && !!token.value)
+
+async function performLogin(credentials) {
+  try {
+    const response = await api.post('/auth/login', credentials)
+    const receivedToken = response.data // string JWT token
+
+    if (typeof receivedToken === 'string' && receivedToken.length > 0) {
+      // Use username from credentials directly (prompted by user)
+      const inputUsername = credentials.username
+
+      login(receivedToken, inputUsername) // Save token and username
+      return { success: true }
+    } else {
+      return { success: false, error: 'Invalid login response' }
+    }
+  } catch (error) {
+    return {
+      success: false,
+      error: error.response?.data?.message || 'Login failed',
+    }
+  }
+}
+
 export function useAuth() {
-  // Login function
-  async function login(loginData) {
-    try {
-      console.log('🔐 Attempting login...')
-      const response = await api.post('/auth/login', loginData)
-      
-      console.log('🔐 Login Response:', response.data)
-      console.log('🔐 Full Response Object:', response)
-      
-      // Try different possible token field names
-      const authToken = response.data.token || 
-                       response.data.access_token || 
-                       response.data.jwt || 
-                       response.data.authToken ||
-                       response.data
-      
-      console.log('🔑 Extracted token:', authToken)
-      console.log('🔑 Token type:', typeof authToken)
-      console.log('🔑 Token length:', authToken?.length)
-      
-      const authUsername = loginData.username
-      
-      if (authToken && authToken !== 'undefined' && typeof authToken === 'string' && authToken.length > 10) {
-        localStorage.setItem('token', authToken)
-        localStorage.setItem('username', authUsername)
-        
-        token.value = authToken
-        username.value = authUsername
-        isAuthenticated.value = true
-        
-        console.log('✅ Login successful')
-        console.log('✅ Token stored:', authToken.substring(0, 20) + '...')
-        return { success: true }
-      } else {
-        console.error('❌ Login failed: No valid token received')
-        console.error('❌ Token value:', authToken)
-        console.error('❌ Response data keys:', Object.keys(response.data))
-        return { success: false, error: 'No valid token received from server' }
-      }
-    } catch (error) {
-      console.error('❌ Login error:', error)
-      return { 
-        success: false, 
-        error: error.response?.data?.message || 'Login failed' 
-      }
-    }
-  }
-
-  // Logout function
-  async function logout() {
-    try {
-      console.log('🚪 Attempting logout...')
-      
-      // Call backend logout endpoint if user is authenticated
-      if (token.value) {
-        await api.post('/auth/logout')
-        console.log('✅ Backend logout successful')
-      }
-    } catch (error) {
-      console.error('❌ Backend logout error:', error)
-      // Continue with frontend logout even if backend fails
-    }
-    
-    // Clear frontend authentication state
-    localStorage.removeItem('token')
-    localStorage.removeItem('username')
-    
-    token.value = ''
-    username.value = ''
-    isAuthenticated.value = false
-    
-    console.log('✅ Frontend logout complete')
-    
-    // Redirect to home page (use window.location to avoid router issues)
-    window.location.href = '/'
-  }
-
-  // Check if user is authenticated
-  const isLoggedIn = computed(() => isAuthenticated.value && !!token.value)
-
   return {
-    isAuthenticated,
-    username,
     token,
+    username,
+    isAuthenticated,
     isLoggedIn,
-    login,
+    login, // low-level setter, not API call
     logout,
-    initializeAuth
+    initializeAuth,
+    performLogin, // the async login that calls backend
   }
-} 
+}

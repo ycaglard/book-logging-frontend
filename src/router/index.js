@@ -44,12 +44,12 @@ const router = createRouter({
 
 // Global Navigation Guard
 router.beforeEach((to, from, next) => {
-  const publicPages = ['/login', '/register', '/verify']
+  const publicPages = ['/', '/login', '/register', '/verify']
   const authRequired = !publicPages.includes(to.path)
   const token = localStorage.getItem('token')
 
   if (authRequired && !token) {
-    return next('/login')
+    return next('/')
   }
 
   next()
