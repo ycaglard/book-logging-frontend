@@ -1,0 +1,354 @@
+# User Profile API Documentation
+
+This document provides comprehensive information about the user profile customization endpoints implemented in the QuoterAPI.
+
+## Table of Contents
+1. [Authentication](#authentication)
+2. [Profile Management](#profile-management)
+3. [Bio Management](#bio-management)
+4. [Contact Information](#contact-information)
+5. [Password Management](#password-management)
+6. [Error Handling](#error-handling)
+
+## Authentication
+
+Most endpoints require authentication using a Bearer token in the Authorization header:
+```
+Authorization: Bearer <your-jwt-token>
+```
+
+## Profile Management
+
+### 1. Get Current User Profile
+
+**Endpoint:** `GET /api/profile/me`  
+**Authorization:** Required
+
+**Request:**
+```http
+GET /api/profile/me
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Profile retrieved successfully",
+  "data": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "isVerified": true,
+    "bio": "Book lover and avid reader. I enjoy science fiction and fantasy novels.",
+    "phoneNumber": "+1234567890",
+    "dateOfBirth": "1990-05-15",
+    "readBooks": ["OL123456W", "OL789012W", "OL345678W"],
+    "wishlist": ["OL901234W", "OL567890W"],
+    "bookListCount": 3
+  }
+}
+```
+
+### 2. Get User Profile by Username (Public)
+
+**Endpoint:** `GET /api/profile/{username}`  
+**Authorization:** Not required
+
+**Request:**
+```http
+GET /api/profile/john_doe
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Profile retrieved successfully",
+  "data": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "isVerified": true,
+    "bio": "Book lover and avid reader. I enjoy science fiction and fantasy novels.",
+    "phoneNumber": "+1234567890",
+    "dateOfBirth": "1990-05-15",
+    "readBooks": ["OL123456W", "OL789012W", "OL345678W"],
+    "wishlist": ["OL901234W", "OL567890W"],
+    "bookListCount": 3
+  }
+}
+```
+
+### 3. Update User Profile
+
+**Endpoint:** `PUT /api/profile/update`  
+**Authorization:** Required
+
+**Request:**
+```http
+PUT /api/profile/update
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "bio": "Updated bio text - I love reading science fiction and fantasy novels. Currently reading Dune!",
+  "phoneNumber": "+1987654321",
+  "dateOfBirth": "1990-05-15"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Profile updated successfully",
+  "data": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "isVerified": true,
+    "bio": "Updated bio text - I love reading science fiction and fantasy novels. Currently reading Dune!",
+    "phoneNumber": "+1987654321",
+    "dateOfBirth": "1990-05-15",
+    "readBooks": ["OL123456W", "OL789012W", "OL345678W"],
+    "wishlist": ["OL901234W", "OL567890W"],
+    "bookListCount": 3
+  }
+}
+```
+
+## Bio Management
+
+### 4. Update Bio
+
+**Endpoint:** `PUT /api/profile/bio`  
+**Authorization:** Required
+
+**Request:**
+```http
+PUT /api/profile/bio
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+"My new bio text - I'm passionate about reading and love sharing book recommendations!"
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Bio updated successfully",
+  "data": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "john@example.com",
+    "isVerified": true,
+    "bio": "My new bio text - I'm passionate about reading and love sharing book recommendations!",
+    "phoneNumber": "+1234567890",
+    "dateOfBirth": "1990-05-15",
+    "readBooks": ["OL123456W", "OL789012W", "OL345678W"],
+    "wishlist": ["OL901234W", "OL567890W"],
+    "bookListCount": 3
+  }
+}
+```
+
+## Contact Information
+
+### 5. Update Contact Information
+
+**Endpoint:** `PUT /api/profile/contact`  
+**Authorization:** Required
+
+**Request:**
+```http
+PUT /api/profile/contact?phoneNumber=%2B1987654321&email=newemail%40example.com
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Contact information updated successfully",
+  "data": {
+    "id": 1,
+    "username": "john_doe",
+    "email": "newemail@example.com",
+    "isVerified": true,
+    "bio": "Book lover and avid reader. I enjoy science fiction and fantasy novels.",
+    "phoneNumber": "+1987654321",
+    "dateOfBirth": "1990-05-15",
+    "readBooks": ["OL123456W", "OL789012W", "OL345678W"],
+    "wishlist": ["OL901234W", "OL567890W"],
+    "bookListCount": 3
+  }
+}
+```
+
+## Password Management
+
+### 6. Change Password
+
+**Endpoint:** `POST /api/profile/change-password`  
+**Authorization:** Required
+
+**Request:**
+```http
+POST /api/profile/change-password
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+Content-Type: application/json
+
+{
+  "currentPassword": "oldPassword123",
+  "newPassword": "newSecurePassword456"
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Password changed successfully",
+  "data": null
+}
+```
+
+## Error Handling
+
+All endpoints return consistent error responses in the following format:
+
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "data": null
+}
+```
+
+### Common Error Scenarios
+
+#### Incorrect Password
+```json
+{
+  "success": false,
+  "message": "Error changing password: Current password is incorrect",
+  "data": null
+}
+```
+
+#### Weak Password
+```json
+{
+  "success": false,
+  "message": "Error changing password: New password must be at least 6 characters long",
+  "data": null
+}
+```
+
+#### User Not Found
+```json
+{
+  "success": false,
+  "message": "Error retrieving profile: User not found",
+  "data": null
+}
+```
+
+#### Email Already Taken
+```json
+{
+  "success": false,
+  "message": "Error updating contact information: Email is already taken by another user",
+  "data": null
+}
+```
+
+#### Authentication Required
+```json
+{
+  "success": false,
+  "message": "Error retrieving profile: User not authenticated",
+  "data": null
+}
+```
+
+## Usage Examples
+
+### JavaScript/TypeScript
+
+```javascript
+// Get current user profile
+const getProfile = async () => {
+  const response = await fetch('/api/profile/me', {
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  const result = await response.json();
+  return result.data;
+};
+
+// Update profile
+const updateProfile = async (profileData) => {
+  const response = await fetch('/api/profile/update', {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(profileData)
+  });
+  return await response.json();
+};
+
+// Change password
+const changePassword = async (currentPassword, newPassword) => {
+  const response = await fetch('/api/profile/change-password', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      currentPassword,
+      newPassword
+    })
+  });
+  return await response.json();
+};
+```
+
+### cURL Examples
+
+```bash
+# Get current user profile
+curl -X GET "http://localhost:8080/api/profile/me" \
+  -H "Authorization: Bearer your-jwt-token"
+
+# Update profile
+curl -X PUT "http://localhost:8080/api/profile/update" \
+  -H "Authorization: Bearer your-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "bio": "Updated bio text",
+    "phoneNumber": "+1234567890"
+  }'
+
+# Change password
+curl -X POST "http://localhost:8080/api/profile/change-password" \
+  -H "Authorization: Bearer your-jwt-token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "currentPassword": "oldPassword",
+    "newPassword": "newPassword"
+  }'
+```
+
+## Notes
+
+- All profile operations require authentication except for public profile viewing
+- Password changes require current password verification
+- Email uniqueness is validated when updating contact information
+- All new features are backward compatible with existing functionality
